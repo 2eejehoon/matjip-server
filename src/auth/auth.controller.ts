@@ -5,13 +5,9 @@ import { GoogleAuthGuard } from "./google/GoogleAuthGuards";
 export class AuthController {
     @Get("google")
     @UseGuards(GoogleAuthGuard)
-    onLogin() {
-        return { msg: "Google Authentication" };
-    }
+    googleLogin() {}
 
     @Get("google/callback")
     @UseGuards(GoogleAuthGuard)
-    onRedirect() {
-        return { msg: "OK" };
-    }
+    googleLoginCallback() {}
 }
