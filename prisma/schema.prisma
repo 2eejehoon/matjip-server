@@ -17,7 +17,8 @@ model User {
   id          Int       @id @default(autoincrement())
   email       String    @unique
   name        String
-  password    String
+  password    String?
+  photo       String?
   posts       Post[]
   likes       Like[]
   recommends  Recommend[]
