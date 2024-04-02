@@ -1,18 +1,24 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { User, Prisma } from "@prisma/client";
+import { GoogleLoginDto } from "./dtos/google-loign.dto";
+import { UsersService } from "src/users/users.service";
+import { User } from "@prisma/client";
 
 @Injectable()
 export class AuthService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        private userService: UsersService,
+        private prisma: PrismaService
+    ) {}
 
-    async findUserByEmail(email: string): Promise<User | null> {
-        return this.prisma.user.findUnique({
-            where: { email }
-        });
-    }
+    async googleLogin(googleLoginDto: GoogleLoginDto): Promise<User> {
+        const exisitngUser = await this.userService.findUserByEmail(
+            googleLoginDto.email
+        );
+        if (exisitngUser) {
+            return exisitngUser;
+        }
 
-    async createUser(data: Prisma.UserCreateInput) {
-        return this.prisma.user.create({ data });
+        return this.userService.createUser(googleLoginDto);
     }
 }
