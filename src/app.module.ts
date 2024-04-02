@@ -10,6 +10,10 @@ import { PrismaService } from "./prisma/prisma.service";
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
 import { ConfigModule } from "@nestjs/config";
+import { PostsController } from "./posts/posts.controller";
+import { AuthController } from "./auth/auth.controller";
+import { AuthService } from "./auth/auth.service";
+import { PassportModule } from "@nestjs/passport";
 
 @Module({
     imports: [
@@ -17,9 +21,21 @@ import { ConfigModule } from "@nestjs/config";
         PostsModule,
         PrismaModule,
         AuthModule,
+        PassportModule.register({ session: true }),
         ConfigModule.forRoot({ envFilePath: ".env" })
     ],
-    controllers: [AppController, UsersController],
-    providers: [AppService, UsersService, PostsService, PrismaService]
+    controllers: [
+        AppController,
+        UsersController,
+        PostsController,
+        AuthController
+    ],
+    providers: [
+        AppService,
+        UsersService,
+        PostsService,
+        PrismaService,
+        AuthService
+    ]
 })
 export class AppModule {}
