@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { GoogleStrategy } from "./google/googleStrategy";
+import { GoogleStrategy } from "./google/google-strategy";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { PrismaModule } from "src/prisma/prisma.module";

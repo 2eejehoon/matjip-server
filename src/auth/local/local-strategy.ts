@@ -7,9 +7,5 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
         super();
     }
 
-    async validate(email: string, password: string) {
-        const user = await this.authService.comparePassword(email, password);
-
-        return user ? user : null;
-    }
+    async validate(email: string, password: string) {}
 }
