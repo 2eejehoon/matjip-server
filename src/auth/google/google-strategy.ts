@@ -6,7 +6,7 @@ import { UsersService } from "src/users/users.service";
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy) {
-    constructor(private userService: UsersService) {
+    constructor(private usersService: UsersService) {
         super({
             clientID: process.env.AUTH_GOOGLE_CLIENT_ID,
             clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET,
@@ -25,16 +25,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
             authProviders: [AUTH_PROVIDERS_ENUM.GOOGLE]
         };
 
-        const exisitngUser = await this.userService.findUserByEmail(user.email);
+        const exisitngUser = await this.usersService.findUserByEmail(user.email);
         if (exisitngUser) {
             if (!exisitngUser.authProviders.includes(AUTH_PROVIDERS_ENUM.GOOGLE)) {
-                const updatedUser = this.userService.updateUserByEmail(user.email, exisitngUser);
+                const updatedUser = this.usersService.updateUserByEmail(user.email, exisitngUser);
                 done(null, updatedUser);
             }
 
             done(null, exisitngUser);
         } else {
-            const createdUser = await this.userService.createUser(user);
+            const createdUser = await this.usersService.createUser(user);
             done(null, createdUser);
         }
     }
