@@ -22,7 +22,7 @@ export class AuthService {
             return res.redirect(process.env.BASE_CLIENT_URL);
         }
 
-        const createdUser = await this.userService.createUser(user);
+        await this.userService.createUser(user);
         return res.redirect(process.env.BASE_CLIENT_URL);
     }
 }
