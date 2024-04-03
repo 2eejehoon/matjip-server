@@ -1,16 +1,21 @@
-import { Controller, Get, Redirect, Req, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Req, Res, UseGuards } from "@nestjs/common";
 import { GoogleAuthGuard } from "./google/google-auth-guard";
+import { AuthService } from "./auth.service";
 import { Request, Response } from "express";
+import { User } from "@prisma/client";
 
 @Controller("auth")
 export class AuthController {
-    constructor() {}
+    constructor(private authService: AuthService) {}
     @Get("google")
     @UseGuards(GoogleAuthGuard)
     async googleLogin(): Promise<void> {}
 
     @Get("google/callback")
     @UseGuards(GoogleAuthGuard)
-    @Redirect(process.env.BASE_CLIENT_URL)
-    async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {}
+    async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
+        const user = await this.authService.findOrCreateUser(req.user as User);
+
+        res.redirect(`${process.env.BASE_CLIENT_URL}/login?token=${user.accessToken}`);
+    }
 }
