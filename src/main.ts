@@ -35,6 +35,6 @@ async function bootstrap() {
     passport.deserializeUser((user, done) => {
         done(null, user);
     });
-    await app.listen(4000);
+    await app.listen(process.env.PORT);
 }
 bootstrap();

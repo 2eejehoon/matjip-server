@@ -1,6 +1,8 @@
-import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Req, Res, UseGuards } from "@nestjs/common";
 import { GoogleAuthGuard } from "./google/GoogleAuthGuards";
 import { AuthService } from "./auth.service";
+import { Request, Response } from "express";
+import { AUTH_PROVIDERS_ENUM } from "src/contants/auth-providers";
 
 @Controller("auth")
 export class AuthController {
@@ -11,5 +13,7 @@ export class AuthController {
 
     @Get("google/callback")
     @UseGuards(GoogleAuthGuard)
-    async googleLoginCallback(): Promise<void> {}
+    async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
+        return this.authService.googleLogin(req, res, AUTH_PROVIDERS_ENUM.GOOGLE);
+    }
 }
