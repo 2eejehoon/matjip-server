@@ -19,10 +19,10 @@ export class AuthService {
             if (!exisitngUser.authProviders.includes(provider)) {
                 exisitngUser.authProviders.push(provider);
             }
-            return res.redirect("http://localhost:3000/");
+            return res.redirect(process.env.BASE_CLIENT_URL);
         }
 
         const createdUser = await this.userService.createUser(user);
-        return res.redirect("http://localhost:3000/");
+        return res.redirect(process.env.BASE_CLIENT_URL);
     }
 }
