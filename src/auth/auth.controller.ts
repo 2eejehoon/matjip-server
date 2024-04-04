@@ -16,6 +16,6 @@ export class AuthController {
     async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
         const user = await this.authService.findOrCreateUser(req.user as User);
 
-        res.redirect(`${process.env.BASE_CLIENT_URL}/login?token=${user.accessToken}`);
+        res.redirect(`${process.env.BASE_CLIENT_URL}/login/google-callback?accessToken=${user.accessToken}`);
     }
 }
