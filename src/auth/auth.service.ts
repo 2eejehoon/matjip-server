@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { User } from "@prisma/client";
-import { AUTH_PROVIDERS_ENUM } from "src/contants/auth-providers";
+import { Prisma } from "@prisma/client";
 import { UsersService } from "src/users/users.service";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -20,6 +19,10 @@ export class AuthService {
         const existingUser = await this.usersService.findUserByEmail(loginDto.email);
         if (!existingUser) {
             throw new NotFoundException("존재하지 않는 이메일입니다.");
+        }
+
+        if (existingUser.password === null) {
+            throw new HttpException("소셜 로그인으로 가입한 이메일 주소입니다.", HttpStatus.CONFLICT);
         }
 
         const isMatch = await bcrypt.compare(loginDto.password, existingUser.password);
@@ -64,26 +67,23 @@ export class AuthService {
         };
     }
 
-    async googleLogin(user: User) {
-        let existingUser = await this.usersService.findUserByEmail(user.email);
+    async googleLogin(user: Prisma.UserCreateInput) {
+        const existingUser = await this.usersService.findUserByEmail(user.email);
         if (existingUser) {
-            if (!existingUser.authProviders.includes(AUTH_PROVIDERS_ENUM.GOOGLE)) {
-                existingUser.authProviders.push(AUTH_PROVIDERS_ENUM.GOOGLE);
-                existingUser = await this.usersService.updateUserByEmail(user.email, existingUser);
-            }
-
             const payload = { email: existingUser.email, sub: existingUser.id };
+            const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
             return {
                 ...existingUser,
-                accessToken: this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") })
+                accessToken
             };
         }
 
         const createdUser = await this.usersService.createUser(user);
         const payload = { email: createdUser.email, sub: createdUser.id };
+        const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
         return {
-            ...existingUser,
-            accessToken: this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") })
+            ...createdUser,
+            accessToken
         };
     }
 }

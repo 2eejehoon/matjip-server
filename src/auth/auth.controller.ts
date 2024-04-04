@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Req, Res, UseGuards, UsePipes, ValidationP
 import { GoogleAuthGuard } from "./google/google-auth-guard";
 import { AuthService } from "./auth.service";
 import { Request, Response } from "express";
-import { User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import { LocalStrategy } from "./local/local-strategy";
@@ -35,8 +35,7 @@ export class AuthController {
     @Get("google/callback")
     @UseGuards(GoogleAuthGuard)
     async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
-        const user = await this.authService.googleLogin(req.user as User);
-
+        const user = await this.authService.googleLogin(req.user as { email: string; name: string; photo: string });
         res.redirect(
             `${this.configService.get("BASE_CLIENT_URL")}/login/google-callback?accessToken=${user.accessToken}`
         );

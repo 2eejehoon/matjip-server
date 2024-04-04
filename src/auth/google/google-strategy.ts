@@ -1,11 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Profile, Strategy, VerifyCallback } from "passport-google-oauth20";
-import { AUTH_PROVIDERS_ENUM } from "src/contants/auth-providers";
+import { AuthService } from "../auth.service";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy) {
-    constructor() {
+    constructor(private authService: AuthService) {
         super({
             clientID: process.env.AUTH_GOOGLE_CLIENT_ID,
             clientSecret: process.env.AUTH_GOOGLE_CLIENT_SECRET,
@@ -20,8 +21,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
         const user = {
             email: emails[0].value,
             name: displayName,
-            photo: photos[0].value,
-            authProviders: [AUTH_PROVIDERS_ENUM.GOOGLE]
+            photo: photos[0].value
         };
 
         done(null, user);
