@@ -7,6 +7,7 @@ import { UsersModule } from "src/users/users.module";
 import { UsersService } from "src/users/users.service";
 import { JwtModule, JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import { JwtStrategy } from "./jwt/jwt-strategy";
 
 @Module({
     imports: [
@@ -16,11 +17,11 @@ import { ConfigService } from "@nestjs/config";
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
                 secret: config.get<string>("JWT_SECRET"),
-                signOptions: { expiresIn: 60000 }
+                signOptions: { expiresIn: config.get<string>("JWT_EXPIRES_IN") }
             })
         })
     ],
     controllers: [AuthController],
-    providers: [GoogleStrategy, AuthService, UsersService, JwtService]
+    providers: [JwtStrategy, GoogleStrategy, AuthService, UsersService, JwtService]
 })
 export class AuthModule {}
