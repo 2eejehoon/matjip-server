@@ -71,11 +71,16 @@ export class AuthService {
                 existingUser.authProviders.push(AUTH_PROVIDERS_ENUM.GOOGLE);
                 existingUser = await this.usersService.updateUserByEmail(user.email, existingUser);
             }
-        } else {
-            existingUser = await this.usersService.createUser(user);
+
+            const payload = { email: existingUser.email, sub: existingUser.id };
+            return {
+                ...existingUser,
+                accessToken: this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") })
+            };
         }
 
-        const payload = { email: existingUser.email, sub: existingUser.id };
+        const createdUser = await this.usersService.createUser(user);
+        const payload = { email: createdUser.email, sub: createdUser.id };
         return {
             ...existingUser,
             accessToken: this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") })
