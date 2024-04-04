@@ -15,6 +15,7 @@ import { AuthController } from "./auth/auth.controller";
 import { AuthService } from "./auth/auth.service";
 import { PassportModule } from "@nestjs/passport";
 import { JwtService } from "@nestjs/jwt";
+import { JwtStrategy } from "./auth/jwt/jwt-strategy";
 
 @Module({
     imports: [
@@ -26,6 +27,6 @@ import { JwtService } from "@nestjs/jwt";
         ConfigModule.forRoot({ isGlobal: true, envFilePath: ".env" })
     ],
     controllers: [AppController, UsersController, PostsController, AuthController],
-    providers: [AppService, UsersService, PostsService, PrismaService, AuthService, JwtService]
+    providers: [AppService, UsersService, PostsService, PrismaService, AuthService, JwtService, JwtStrategy]
 })
 export class AppModule {}
