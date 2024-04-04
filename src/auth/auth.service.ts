@@ -1,9 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { User } from "@prisma/client";
 import { AUTH_PROVIDERS_ENUM } from "src/contants/auth-providers";
 import { UsersService } from "src/users/users.service";
 import { SignupDto } from "./dto/signup.dto";
+import { LoginDto } from "./dto/login.dto";
 import * as bcrypt from "bcrypt";
 
 @Injectable()
@@ -12,6 +13,27 @@ export class AuthService {
         private usersService: UsersService,
         private jwtService: JwtService
     ) {}
+
+    async login(loginDto: LoginDto) {
+        const existingUser = await this.usersService.findUserByEmail(loginDto.email);
+        if (!existingUser) {
+            throw new NotFoundException("존재하지 않는 이메일입니다.");
+        }
+
+        const isMatch = await bcrypt.compare(loginDto.password, existingUser.password);
+        if (!isMatch) {
+            throw new UnauthorizedException("비밀번호가 일치하지 않습니다.");
+        }
+
+        const payload = { email: existingUser.email };
+        const accessToken = this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });
+        const { password, ...userinfo } = existingUser;
+
+        return {
+            ...userinfo,
+            accessToken
+        };
+    }
 
     async signup({ passwordConfirm, ...user }: SignupDto) {
         if (user.password !== passwordConfirm) {
@@ -30,12 +52,13 @@ export class AuthService {
 
         const createdUser = await this.usersService.createUser(data);
 
+        const payload = { email: createdUser.email, sub: createdUser.id };
+        const accessToken = this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });
         const { password, ...userinfo } = createdUser;
-        const payload = { email: userinfo.email, sub: userinfo.id };
 
         return {
             ...userinfo,
-            accessToken: this.jwtService.sign(payload, { secret: process.env.JWT_SECRET })
+            accessToken
         };
     }
 

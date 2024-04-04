@@ -4,10 +4,20 @@ import { AuthService } from "./auth.service";
 import { Request, Response } from "express";
 import { User } from "@prisma/client";
 import { SignupDto } from "./dto/signup.dto";
+import { LoginDto } from "./dto/login.dto";
+import { LocalStrategy } from "./local/local-strategy";
 
 @Controller("auth")
 export class AuthController {
     constructor(private authService: AuthService) {}
+
+    @Post("login")
+    @UseGuards(LocalStrategy)
+    @UsePipes(ValidationPipe)
+    async login(@Body() loginDto: LoginDto) {
+        return this.authService.login(loginDto);
+    }
+
     @Post("signup")
     @UsePipes(ValidationPipe)
     async signup(@Body() signupDto: SignupDto) {
