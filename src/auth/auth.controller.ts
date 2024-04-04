@@ -6,10 +6,14 @@ import { User } from "@prisma/client";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import { LocalStrategy } from "./local/local-strategy";
+import { ConfigService } from "@nestjs/config";
 
 @Controller("auth")
 export class AuthController {
-    constructor(private authService: AuthService) {}
+    constructor(
+        private authService: AuthService,
+        private configService: ConfigService
+    ) {}
 
     @Post("login")
     @UseGuards(LocalStrategy)
@@ -33,6 +37,11 @@ export class AuthController {
     async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
         const user = await this.authService.googleLogin(req.user as User);
 
-        res.redirect(`${process.env.BASE_CLIENT_URL}/login/google-callback?accessToken=${user.accessToken}`);
+        res.redirect(
+            `${this.configService.get("BASE_CLIENT_URL")}/login/google-callback?accessToken=${user.accessToken}`
+        );
     }
+
+    @Get("kakao")
+    async kakaoLogin() {}
 }
