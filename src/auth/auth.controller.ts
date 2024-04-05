@@ -23,7 +23,7 @@ export class AuthController {
             maxAge: 60000,
             httpOnly: true,
             secure: true,
-            domain: this.configService.get("BASE_CLIENT_URL"),
+            domain: "localhost",
             path: "/",
             sameSite: "strict"
         });
@@ -48,12 +48,12 @@ export class AuthController {
             maxAge: 60000,
             httpOnly: true,
             secure: true,
-            domain: this.configService.get("BASE_CLIENT_URL"),
+            domain: "localhost",
             path: "/",
             sameSite: "strict"
         });
         res.redirect(
-            `${this.configService.get("BASE_CLIENT_URL")}/login/google-callback?accessToken=${user.accessToken}`
+            `${this.configService.get("BASE_CLIENT_URL")}/auth/login/google-callback?accessToken=${user.accessToken}`
         );
     }
 
