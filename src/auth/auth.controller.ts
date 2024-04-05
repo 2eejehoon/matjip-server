@@ -2,7 +2,6 @@ import { Body, Controller, Get, Post, Req, Res, UseGuards, UsePipes, ValidationP
 import { GoogleAuthGuard } from "./google/google-auth-guard";
 import { AuthService } from "./auth.service";
 import { Request, Response } from "express";
-import { Prisma } from "@prisma/client";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import { LocalStrategy } from "./local/local-strategy";
