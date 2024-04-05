@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Get, HttpStatus, Post, Req, Res, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { GoogleAuthGuard } from "./google/google-auth-guard";
 import { AuthService } from "./auth.service";
 import { Request, Response } from "express";
@@ -17,8 +17,17 @@ export class AuthController {
     @Post("login")
     @UseGuards(LocalAuthGuard)
     @UsePipes(ValidationPipe)
-    async login(@Body() loginDto: LoginDto) {
-        return this.authService.login(loginDto);
+    async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+        const user = await this.authService.login(loginDto);
+        res.cookie("accessToken", user.accessToken, {
+            maxAge: 60000,
+            httpOnly: true,
+            secure: true,
+            domain: this.configService.get("BASE_CLIENT_URL"),
+            path: "/",
+            sameSite: "strict"
+        });
+        res.status(HttpStatus.OK).json(user);
     }
 
     @Post("signup")
@@ -35,6 +44,14 @@ export class AuthController {
     @UseGuards(GoogleAuthGuard)
     async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
         const user = await this.authService.googleLogin(req.user as { email: string; name: string; photo: string });
+        res.cookie("accessToken", user.accessToken, {
+            maxAge: 60000,
+            httpOnly: true,
+            secure: true,
+            domain: this.configService.get("BASE_CLIENT_URL"),
+            path: "/",
+            sameSite: "strict"
+        });
         res.redirect(
             `${this.configService.get("BASE_CLIENT_URL")}/login/google-callback?accessToken=${user.accessToken}`
         );
