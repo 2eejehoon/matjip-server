@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { GoogleStrategy } from "./google/google-strategy";
+import { LocalStrategy } from "./local/local-strategy";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { PrismaModule } from "src/prisma/prisma.module";
@@ -21,6 +22,6 @@ import { ConfigService } from "@nestjs/config";
         })
     ],
     controllers: [AuthController],
-    providers: [GoogleStrategy, AuthService, UsersService, JwtService]
+    providers: [LocalStrategy, GoogleStrategy, AuthService, UsersService, JwtService]
 })
 export class AuthModule {}

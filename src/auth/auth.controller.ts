@@ -4,8 +4,8 @@ import { AuthService } from "./auth.service";
 import { Request, Response } from "express";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
-import { LocalStrategy } from "./local/local-strategy";
 import { ConfigService } from "@nestjs/config";
+import { LocalAuthGuard } from "./local/local-auth-guard";
 
 @Controller("auth")
 export class AuthController {
@@ -15,7 +15,7 @@ export class AuthController {
     ) {}
 
     @Post("login")
-    @UseGuards(LocalStrategy)
+    @UseGuards(LocalAuthGuard)
     @UsePipes(ValidationPipe)
     async login(@Body() loginDto: LoginDto) {
         return this.authService.login(loginDto);
