@@ -2,10 +2,12 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import * as session from "express-session";
 import * as passport from "passport";
+import * as cookieParser from "cookie-parser";
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     app.setGlobalPrefix("api");
+    app.use(cookieParser());
 
     // TODO: 로컬 환경에서 개발 끝나면 삭제
     app.enableCors({
@@ -29,6 +31,7 @@ async function bootstrap() {
 
     app.use(passport.initialize());
     app.use(passport.session());
+
     passport.serializeUser((user, done) => {
         done(null, user);
     });
