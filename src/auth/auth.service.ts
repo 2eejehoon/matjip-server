@@ -15,6 +15,16 @@ export class AuthService {
         private configService: ConfigService
     ) {}
 
+    async validateUser(email: string, password: string) {
+        const existingUser = await this.usersService.findUserByEmail(email);
+        const isMatch = await bcrypt.compare(password, existingUser.password);
+        if (!isMatch) {
+            throw new UnauthorizedException("비밀번호가 일치하지 않습니다.");
+        }
+
+        return isMatch;
+    }
+
     async login(loginDto: LoginDto) {
         const existingUser = await this.usersService.findUserByEmail(loginDto.email);
         if (!existingUser) {
@@ -23,11 +33,6 @@ export class AuthService {
 
         if (existingUser.password === null) {
             throw new HttpException("소셜 로그인으로 가입한 이메일 주소입니다.", HttpStatus.CONFLICT);
-        }
-
-        const isMatch = await bcrypt.compare(loginDto.password, existingUser.password);
-        if (!isMatch) {
-            throw new UnauthorizedException("비밀번호가 일치하지 않습니다.");
         }
 
         const payload = { email: existingUser.email };
