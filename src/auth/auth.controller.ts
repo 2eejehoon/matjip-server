@@ -6,6 +6,7 @@ import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import { ConfigService } from "@nestjs/config";
 import { LocalAuthGuard } from "./local/local-auth-guard";
+import { User } from "@prisma/client";
 
 @Controller("auth")
 export class AuthController {
@@ -43,7 +44,7 @@ export class AuthController {
     @Get("google/callback")
     @UseGuards(GoogleAuthGuard)
     async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
-        const user = await this.authService.googleLogin(req.user as { email: string; name: string; photo: string });
+        const user = await this.authService.googleLogin(req.user as User);
         res.cookie("accessToken", user.accessToken, {
             maxAge: 60000,
             httpOnly: true,

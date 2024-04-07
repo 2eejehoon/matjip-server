@@ -83,8 +83,16 @@ export class AuthService {
             };
         }
 
-        const createdUser = await this.usersService.createUser(user);
-        const payload = { email: createdUser.email, sub: createdUser.id };
+        const createdUser = await this.usersService.createUser({
+            email: user.email,
+            name: user.name,
+            profile: {
+                create: {
+                    photo: user.photo
+                }
+            }
+        });
+        const payload = { email: createdUser.email, userId: createdUser.id };
         const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
         return {
             ...createdUser,
