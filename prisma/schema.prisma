@@ -38,7 +38,22 @@ model Post {
   categoryId      Int
   category        Category  @relation(fields: [categoryId], references: [id])
   createdAt       DateTime  @default(now())
+  photos          Photo[]
+  latitude        Float?
+  longitude       Float?
   updatedAt       DateTime  @updatedAt
+}
+
+model Photo {
+  id              Int       @id @default(autoincrement())
+  post            Post      @relation(fields: [postId], references: [id])
+  postId          Int
+  filename        String
+  path            String
+  description     String?
+  createdAt       DateTime  @default(now())
+
+  
 }
 
 model Comment {
