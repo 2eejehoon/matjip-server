@@ -19,6 +19,8 @@ export class UsersService {
     }
 
     async getUserAndProfile(user: User) {
-        return { ...user, profile: await this.prisma.profile.findUnique({ where: { userId: user.id } }) };
+        const { password, ...userinfo } = user;
+        const profile = await this.prisma.profile.findUnique({ where: { userId: user.id } });
+        return { ...userinfo, profile };
     }
 }
