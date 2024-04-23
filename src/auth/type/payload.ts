@@ -1,5 +1,5 @@
-export interface Payload {
+export type Payload = {
     email: string;
     userId: string;
     iat: number;
-}
+};

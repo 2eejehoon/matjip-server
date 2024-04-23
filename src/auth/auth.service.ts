@@ -36,12 +36,12 @@ export class AuthService {
         }
 
         const payload = { email: existingUser.email };
-        const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
-        const { password, ...userinfo } = existingUser;
+        const accessToken = this.jwtService.signAsync(payload, { secret: this.configService.get("JWT_SECRET") });
+        const refreshToken = this.jwtService.signAsync(payload, { secret: this.configService.get("JWT_SECRET") });
 
         return {
-            ...userinfo,
-            accessToken
+            accessToken,
+            refreshToken
         };
     }
 
@@ -64,11 +64,11 @@ export class AuthService {
 
         const payload = { email: createdUser.email, sub: createdUser.id };
         const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
-        const { password, ...userinfo } = createdUser;
+        const refreshToken = this.jwtService.signAsync(payload, { secret: this.configService.get("JWT_SECRET") });
 
         return {
-            ...userinfo,
-            accessToken
+            accessToken,
+            refreshToken
         };
     }
 
@@ -77,9 +77,11 @@ export class AuthService {
         if (existingUser) {
             const payload = { email: existingUser.email, sub: existingUser.id };
             const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
+            const refreshToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
+
             return {
-                ...existingUser,
-                accessToken
+                accessToken,
+                refreshToken
             };
         }
 
@@ -92,11 +94,14 @@ export class AuthService {
                 }
             }
         });
+
         const payload = { email: createdUser.email, userId: createdUser.id };
         const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
+        const refreshToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
+
         return {
-            ...createdUser,
-            accessToken
+            accessToken,
+            refreshToken
         };
     }
 }

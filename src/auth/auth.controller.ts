@@ -6,7 +6,7 @@ import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import { ConfigService } from "@nestjs/config";
 import { LocalAuthGuard } from "./local/local-auth-guard";
-import { User } from "@prisma/client";
+import { GoogleUser } from "./type/googleUser";
 
 @Controller("auth")
 export class AuthController {
@@ -21,7 +21,15 @@ export class AuthController {
     async login(@Body() loginDto: LoginDto, @Res() res: Response) {
         const user = await this.authService.login(loginDto);
         res.cookie("accessToken", user.accessToken, {
-            maxAge: 60000,
+            maxAge: 1000 * 60 * 60 * 24,
+            httpOnly: true,
+            secure: true,
+            domain: "localhost",
+            path: "/",
+            sameSite: "strict"
+        });
+        res.cookie("refreshToken", user.refreshToken, {
+            maxAge: 1000 * 60 * 60 * 24,
             httpOnly: true,
             secure: true,
             domain: "localhost",
@@ -44,9 +52,17 @@ export class AuthController {
     @Get("google/callback")
     @UseGuards(GoogleAuthGuard)
     async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
-        const user = await this.authService.googleLogin(req.user as User);
+        const user = await this.authService.googleLogin(req.user as GoogleUser);
         res.cookie("accessToken", user.accessToken, {
-            maxAge: 60000,
+            maxAge: 1000 * 60 * 60 * 24,
+            httpOnly: true,
+            secure: true,
+            domain: "localhost",
+            path: "/",
+            sameSite: "strict"
+        });
+        res.cookie("refreshToken", user.refreshToken, {
+            maxAge: 1000 * 60 * 60 * 24,
             httpOnly: true,
             secure: true,
             domain: "localhost",
