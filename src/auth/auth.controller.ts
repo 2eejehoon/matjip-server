@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Post, Req, Res, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, Res, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { GoogleAuthGuard } from "./google/google-auth-guard";
 import { AuthService } from "./auth.service";
 import { Request, Response } from "express";
@@ -7,6 +7,8 @@ import { LoginDto } from "./dto/login.dto";
 import { ConfigService } from "@nestjs/config";
 import { LocalAuthGuard } from "./local/local-auth-guard";
 import { GoogleUser } from "./type/googleUser";
+import { JwtAuthGuard } from "./jwt/jwt-auth-guard";
+import { User } from "@prisma/client";
 
 @Controller("auth")
 export class AuthController {
@@ -18,25 +20,8 @@ export class AuthController {
     @Post("login")
     @UseGuards(LocalAuthGuard)
     @UsePipes(ValidationPipe)
-    async login(@Body() loginDto: LoginDto, @Res() res: Response) {
-        const user = await this.authService.login(loginDto);
-        res.cookie("accessToken", user.accessToken, {
-            maxAge: 1000 * 60 * 60 * 24,
-            httpOnly: true,
-            secure: true,
-            domain: "localhost",
-            path: "/",
-            sameSite: "strict"
-        });
-        res.cookie("refreshToken", user.refreshToken, {
-            maxAge: 1000 * 60 * 60 * 24,
-            httpOnly: true,
-            secure: true,
-            domain: "localhost",
-            path: "/",
-            sameSite: "strict"
-        });
-        res.status(HttpStatus.OK).json(user);
+    async login(@Body() loginDto: LoginDto) {
+        return await this.authService.login(loginDto);
     }
 
     @Post("signup")
@@ -52,28 +37,15 @@ export class AuthController {
     @Get("google/callback")
     @UseGuards(GoogleAuthGuard)
     async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
-        const user = await this.authService.googleLogin(req.user as GoogleUser);
-        res.cookie("accessToken", user.accessToken, {
-            maxAge: 1000 * 60 * 60 * 24,
-            httpOnly: true,
-            secure: true,
-            domain: "localhost",
-            path: "/",
-            sameSite: "strict"
-        });
-        res.cookie("refreshToken", user.refreshToken, {
-            maxAge: 1000 * 60 * 60 * 24,
-            httpOnly: true,
-            secure: true,
-            domain: "localhost",
-            path: "/",
-            sameSite: "strict"
-        });
+        const { accessToken } = await this.authService.googleLogin(req.user as GoogleUser);
         res.redirect(
-            `${this.configService.get("BASE_CLIENT_URL")}/auth/login/google-callback?accessToken=${user.accessToken}`
+            `${this.configService.get("BASE_CLIENT_URL")}/auth/login/google-callback?accessToken=${accessToken}`
         );
     }
 
-    @Get("kakao")
-    async kakaoLogin() {}
+    @Get("refreshToken")
+    @UseGuards(JwtAuthGuard)
+    async refreshToken(@Req() req: Request) {
+        return await this.authService.refreshToken(req.user as User);
+    }
 }

@@ -8,8 +8,8 @@ import { User } from "@prisma/client";
 export class UsersController {
     constructor(private usersService: UsersService) {}
 
-    @UseGuards(JwtAuthGuard)
     @Get("profile")
+    @UseGuards(JwtAuthGuard)
     async getUserProfile(@Req() req: Request) {
         return await this.usersService.getUserAndProfile(req.user as User);
     }

@@ -1,11 +1,12 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { Prisma } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { UsersService } from "src/users/users.service";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import * as bcrypt from "bcrypt";
 import { ConfigService } from "@nestjs/config";
+import { Payload } from "./type/payload";
 
 @Injectable()
 export class AuthService {
@@ -35,9 +36,10 @@ export class AuthService {
             throw new HttpException("소셜 로그인으로 가입한 이메일 주소입니다.", HttpStatus.CONFLICT);
         }
 
-        const payload = { email: existingUser.email };
-        const accessToken = this.jwtService.signAsync(payload, { secret: this.configService.get("JWT_SECRET") });
-        const refreshToken = this.jwtService.signAsync(payload, { secret: this.configService.get("JWT_SECRET") });
+        const payload = { email: existingUser.email, sub: existingUser.id };
+        const { accessToken, refreshToken } = await this.getToken(payload);
+
+        await this.usersService.updateUserByEmail(loginDto.email, { ...existingUser, refreshToken });
 
         return {
             accessToken,
@@ -60,29 +62,14 @@ export class AuthService {
             password: await bcrypt.hash(user.password, 10)
         };
 
-        const createdUser = await this.usersService.createUser(data);
-
-        const payload = { email: createdUser.email, sub: createdUser.id };
-        const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
-        const refreshToken = this.jwtService.signAsync(payload, { secret: this.configService.get("JWT_SECRET") });
-
-        return {
-            accessToken,
-            refreshToken
-        };
+        await this.usersService.createUser(data);
     }
 
     async googleLogin(user: Prisma.UserCreateInput) {
         const existingUser = await this.usersService.findUserByEmail(user.email);
         if (existingUser) {
             const payload = { email: existingUser.email, sub: existingUser.id };
-            const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
-            const refreshToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
-
-            return {
-                accessToken,
-                refreshToken
-            };
+            return this.getToken(payload);
         }
 
         const createdUser = await this.usersService.createUser({
@@ -95,9 +82,31 @@ export class AuthService {
             }
         });
 
-        const payload = { email: createdUser.email, userId: createdUser.id };
-        const accessToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
-        const refreshToken = this.jwtService.sign(payload, { secret: this.configService.get("JWT_SECRET") });
+        const payload = { email: createdUser.email, sub: createdUser.id };
+        return this.getToken(payload);
+    }
+
+    async getToken(payload: Payload) {
+        const accessToken = this.jwtService.sign(payload, {
+            secret: this.configService.get("JWT_SECRET"),
+            expiresIn: 1000 * 60 * 30
+        });
+        const refreshToken = this.jwtService.sign(payload, {
+            secret: this.configService.get("JWT_SECRET"),
+            expiresIn: 1000 * 60 * 60 * 24 * 3
+        });
+
+        return {
+            accessToken,
+            refreshToken
+        };
+    }
+
+    async refreshToken(user: User) {
+        const payload = { email: user.email, sub: user.id };
+        const { accessToken, refreshToken } = await this.getToken(payload);
+
+        this.usersService.updateUserByEmail(user.email, { ...user, refreshToken });
 
         return {
             accessToken,

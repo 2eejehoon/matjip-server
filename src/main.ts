@@ -22,8 +22,8 @@ async function bootstrap() {
             resave: false,
             saveUninitialized: true,
             cookie: {
-                sameSite: "lax",
-                maxAge: 60000,
+                sameSite: "strict",
+                maxAge: 1000 * 60 * 60 * 24,
                 httpOnly: true
             }
         })
