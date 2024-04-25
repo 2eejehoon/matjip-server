@@ -19,7 +19,7 @@ export class UsersService {
     }
 
     async getUserAndProfile(user: User) {
-        const { password, ...userinfo } = user;
+        const { password, refreshToken, ...userinfo } = user;
         const profile = await this.prisma.profile.findUnique({ where: { userId: user.id } });
         return { ...userinfo, profile };
     }
