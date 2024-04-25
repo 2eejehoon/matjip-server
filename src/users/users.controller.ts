@@ -1,8 +1,9 @@
-import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Put, Req, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "src/auth/jwt/jwt-auth-guard";
 import { Request } from "express";
 import { UsersService } from "./users.service";
 import { User } from "@prisma/client";
+import { UpdateUserDto } from "./dto/updateUser.dto";
 
 @Controller("users")
 export class UsersController {
@@ -12,5 +13,11 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     async getUserProfile(@Req() req: Request) {
         return await this.usersService.getUserAndProfile(req.user as User);
+    }
+
+    @Put("profile")
+    @UseGuards(JwtAuthGuard)
+    async updateUserProfile(@Body() updateUserDto: UpdateUserDto) {
+        return await this.usersService.updateUserProfileByUserId(updateUserDto);
     }
 }
