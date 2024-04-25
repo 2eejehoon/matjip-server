@@ -38,9 +38,7 @@ export class AuthController {
     @UseGuards(GoogleAuthGuard)
     async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
         const { accessToken } = await this.authService.googleLogin(req.user as GoogleUser);
-        res.redirect(
-            `${this.configService.get("BASE_CLIENT_URL")}/auth/login/google-callback?accessToken=${accessToken}`
-        );
+        res.redirect(`${this.configService.get("BASE_CLIENT_URL")}/auth/google-callback?accessToken=${accessToken}`);
     }
 
     @Get("refreshToken")
