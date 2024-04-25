@@ -1,12 +1,13 @@
 import { HttpException, HttpStatus, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { Prisma, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { UsersService } from "src/users/users.service";
 import { SignupDto } from "./dto/signup.dto";
 import { LoginDto } from "./dto/login.dto";
 import * as bcrypt from "bcrypt";
 import { ConfigService } from "@nestjs/config";
 import { Payload } from "./type/payload";
+import { GoogleUser } from "./type/googleUser";
 
 @Injectable()
 export class AuthService {
@@ -47,8 +48,8 @@ export class AuthService {
         };
     }
 
-    async signup({ passwordConfirm, ...user }: SignupDto) {
-        if (user.password !== passwordConfirm) {
+    async signup({ password, passwordConfirm, ...user }: SignupDto) {
+        if (password !== passwordConfirm) {
             throw new HttpException("비밀번호와 비빌번호 확인이 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
 
@@ -57,15 +58,17 @@ export class AuthService {
             throw new HttpException("이미 존재하는 이메일 주소입니다.", HttpStatus.CONFLICT);
         }
 
-        const data = {
-            ...user,
-            password: await bcrypt.hash(user.password, 10)
-        };
-
-        await this.usersService.createUser(data);
+        await this.usersService.createUser({
+            email: user.email,
+            profile: {
+                create: {
+                    name: user.name
+                }
+            }
+        });
     }
 
-    async googleLogin(user: Prisma.UserCreateInput) {
+    async googleLogin(user: GoogleUser) {
         const existingUser = await this.usersService.findUserByEmail(user.email);
         if (existingUser) {
             const payload = { email: existingUser.email, sub: existingUser.id };
@@ -74,9 +77,9 @@ export class AuthService {
 
         const createdUser = await this.usersService.createUser({
             email: user.email,
-            name: user.name,
             profile: {
                 create: {
+                    name: user.name,
                     photo: user.photo
                 }
             }

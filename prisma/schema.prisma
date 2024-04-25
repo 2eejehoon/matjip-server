@@ -16,9 +16,7 @@ datasource db {
 model User {
   id              Int        @id @default(autoincrement())
   email           String     @unique
-  name            String
   password        String?
-  photo           String?
   profile         Profile?
   posts           Post[]
   likes           Like[]
@@ -30,6 +28,7 @@ model User {
 
 model Profile {
   id                Int      @id @default(autoincrement())
+  name              String?
   photo             String?
   userId            Int      @unique
   user              User     @relation(fields: [userId], references: [id])
