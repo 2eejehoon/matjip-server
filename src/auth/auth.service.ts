@@ -113,4 +113,6 @@ export class AuthService {
             refreshToken
         };
     }
+
+    async logout() {}
 }

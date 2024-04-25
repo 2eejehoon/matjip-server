@@ -37,13 +37,20 @@ export class AuthController {
     @Get("google/callback")
     @UseGuards(GoogleAuthGuard)
     async googleLoginCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
-        const { accessToken } = await this.authService.googleLogin(req.user as GoogleUser);
-        res.redirect(`${this.configService.get("BASE_CLIENT_URL")}/auth/google-callback?accessToken=${accessToken}`);
+        const { accessToken, refreshToken } = await this.authService.googleLogin(req.user as GoogleUser);
+        res.redirect(
+            `${this.configService.get("BASE_CLIENT_URL")}/auth/google-callback?accessToken=${accessToken}&refreshToken=${refreshToken}`
+        );
     }
 
     @Get("refreshToken")
     @UseGuards(JwtAuthGuard)
     async refreshToken(@Req() req: Request) {
         return await this.authService.refreshToken(req.user as User);
+    }
+
+    @Post("logout")
+    async logout() {
+        return await this.authService.logout();
     }
 }
