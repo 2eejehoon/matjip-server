@@ -19,10 +19,8 @@ export class UsersService {
         return this.prisma.user.update({ where: { email }, data });
     }
 
-    async getUserAndProfile(user: User) {
-        const { password, refreshToken, ...userinfo } = user;
-        const profile = await this.prisma.profile.findUnique({ where: { userId: user.id } });
-        return { ...userinfo, profile };
+    async getProfile(user: User) {
+        return await this.prisma.profile.findUnique({ where: { userId: user.id } });
     }
 
     async updateProfileByUserId({ userId, ...data }: UpdateUserDto) {

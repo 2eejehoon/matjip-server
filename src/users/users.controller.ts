@@ -11,8 +11,8 @@ export class UsersController {
 
     @Get("profile")
     @UseGuards(JwtAuthGuard)
-    async getUserProfile(@Req() req: Request) {
-        return await this.usersService.getUserAndProfile(req.user as User);
+    async getProfile(@Req() req: Request) {
+        return await this.usersService.getProfile(req.user as User);
     }
 
     @Put("profile")
